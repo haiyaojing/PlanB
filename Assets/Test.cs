@@ -61,17 +61,38 @@ public class Test : MonoBehaviour
         
     }
 
+    Vector2 getSafeArea(Vector2 p)
+    {
+        var x = p.x < 50 ? 50 : p.x;
+        x = x > 150 ? 150 : x;
+        var y = p.y < 50 ? 50 : p.y;
+        y = y > 150 ? 150 : y;
+        return new Vector2(x, y);
+    }
+
+    private Vector2 tmp;
+
     private void LateUpdate()
     {
         switch (TouchInfo.Phase)
         {
             case TouchPhase.Began:
-                if (RectTransformUtility.ScreenPointToLocalPointInRectangle(Test1, TouchInfo.Position, Cam,
+                if (TouchInfo.Position.x > 200 || TouchInfo.Position.y > 200)
+                {
+                    break;
+                }
+
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(Test1, TouchInfo.Position, Cam,
+                    out var localPoint1);
+                var v = getSafeArea(TouchInfo.Position);
+                if (RectTransformUtility.ScreenPointToLocalPointInRectangle(Test1, v, Cam,
                     out var localPoint))
                 {
-                    if (TouchInfo.Position.x > 200 || TouchInfo.Position.y > 200) break;
+                    tmp = localPoint - localPoint1;
+                    tmp = Vector2.zero;
                     Container.gameObject.SetActive(true);
-                    Container.anchoredPosition = localPoint;
+
+                    Container.anchoredPosition = localPoint1;
                     Stick.anchoredPosition = Vector2.zero;
                     _fingerId = TouchInfo.FingerId;
                 }
@@ -98,7 +119,7 @@ public class Test : MonoBehaviour
                             var distance = (p - p1).magnitude;
                             if (distance > 50) distance = 50;
                             var pos = direction * distance;
-                            Stick.anchoredPosition = pos;
+                            Stick.anchoredPosition = pos + tmp;
                                                         
                         }
                     }
